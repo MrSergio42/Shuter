@@ -1,4 +1,5 @@
 from pygame import *
+from random import randint
 
 init()
 
@@ -15,6 +16,7 @@ clock = time.Clock()
 
 class GameSprite(sprite.Sprite):
     def __init__(self, x, y, speed, img, weight, height):
+        super().__init__()
         self.speed = speed
         self.image = transform.scale(image.load(img), (weight, height))
         self.weight = weight
@@ -34,7 +36,39 @@ class Player(GameSprite):
         if keys_presed[K_d] and self.rect.x < W -  self.weight:
             self.rect.x += self.speed
 
-player = Player(W / 2, H - 140, 5, "images/rocket.png", 80, 140)
+class Enemy(GameSprite):
+    def update(self):
+        global kill
+        self.rect.y += self.speed
+        if self.rect.y > H - self.height:
+            self.rect.x = randint(0, W - self.weight)
+            self.rect.y = 0
+            kill += 1
+
+class Venom(GameSprite):
+    def __init__(self, x, y, speed, img, weight, height):
+        super().__init__(x, y, speed, img, weight, height)
+        self.angel = 0
+        self.original_image = self.image
+    def update(self):
+        self.rect.y += self.speed
+        self.angel += 2
+        self.image = transform.rotate(self.original_image, self.angel)
+        if self.rect.y > H - self.height:
+            self.rect.x = randint(0, W - self.weight)
+            self.rect.y = 0
+
+player = Player(W / 2, H - 140, 5, "images/51fQqBomGhL-removebg-preview.png", 130, 140)
+enemis = sprite.Group()
+for i in range(5):
+    enemy = Enemy(randint(0, W - 70), randint(-35, 0), randint(1, 5), "images/ufo.png", 70, 35)
+    enemis.add(enemy)
+
+venom1 = Venom(randint(0, W - 70), randint(-35, 0), randint(1, 5), "images/asteroid.png", 70, 35)
+
+life = 3
+kill = 0
+skiped = 0
 
 game = True
 while game:
@@ -47,5 +81,12 @@ while game:
     player.draw()
     player.move()
 
+    enemis.draw(window)
+    enemis.update()
+
+    venom1.draw()
+    venom1.update()
+
+
     display.flip()
-    clock.tick(fps)
+    clock.tick(fps)      
